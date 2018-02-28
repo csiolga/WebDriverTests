@@ -12,6 +12,7 @@ public class LoginTest {
     private static final String DESTINATION_URL = "https://192.168.100.26/";
     private static final String USERNAME = "EugenBorisik";
     private static final String PASSWORD = "qwerty12345";
+    private static final String EXPECTED_NAME = "Borisik, Eugen";
     private WebDriver driver;
 
     @BeforeMethod
@@ -34,6 +35,6 @@ public class LoginTest {
 
         String name = driver.findElement(By.id("name")).getText();
 
-        Assert.assertEquals("Borisik, Eugen", name, "Name is");
+        Assert.assertEquals(EXPECTED_NAME, name, "Name is " + EXPECTED_NAME);
     }
 }
