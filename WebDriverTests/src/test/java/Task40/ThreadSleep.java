@@ -19,7 +19,6 @@ public class ThreadSleep {
     public void openStartPage() {
         System.setProperty("webdriver.chrome.driver", "src/test/resources/chromedriver.exe");
         driver = new ChromeDriver();
-        driver.manage().window().maximize();
         driver.get(DESTINATION_URL);
     }
 
@@ -28,21 +27,20 @@ public class ThreadSleep {
         driver.close();
     }
 
-    @Test(groups = { "smoke", "waits" })
+    @Test
     public void loginRmsys() {
         driver.findElement(By.id("Username")).sendKeys(USERNAME);
         driver.findElement(By.id("Password")).sendKeys(PASSWORD);
         driver.findElement(By.id("SubmitButton")).click();
-
         try{
             //Explicit wait
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
         String name = driver.findElement(By.id("name")).getText();
 
-        Assert.assertEquals(EXPECTED_NAME, name, "Name is " + EXPECTED_NAME);
+        Assert.assertEquals(EXPECTED_NAME, name,
+                "Expected name is '" + EXPECTED_NAME + "' but actual name is '" + name + "'");
     }
 }

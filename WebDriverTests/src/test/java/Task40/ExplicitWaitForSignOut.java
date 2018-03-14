@@ -14,6 +14,7 @@ public class ExplicitWaitForSignOut {
     private static final String DESTINATION_URL = "https://192.168.100.26/";
     private static final String USERNAME = "EugenBorisik";
     private static final String PASSWORD = "qwerty12345";
+    private static final By SIGN_OUT_LINK = By.cssSelector("a[title='Sign out']");
     private WebDriver driver;
 
     @BeforeMethod
@@ -31,13 +32,11 @@ public class ExplicitWaitForSignOut {
 
     @Test(groups = { "smoke", "waits" })
     public void verifySignOutLinkDisplayed() {
-        driver.findElement(By.id("Username")).sendKeys(USERNAME);
+        driver.findElement( By.id("Username")).sendKeys(USERNAME);
         driver.findElement(By.id("Password")).sendKeys(PASSWORD);
         driver.findElement(By.id("SubmitButton")).click();
+        new WebDriverWait(driver, 15).until(ExpectedConditions.visibilityOfElementLocated(SIGN_OUT_LINK));
 
-        By signOutLink = By.cssSelector("a[title='Sign out']");
-        new WebDriverWait(driver, 15).until(ExpectedConditions.visibilityOfElementLocated(signOutLink));
-
-        Assert.assertTrue(driver.findElement(signOutLink).isDisplayed(), "Sign Out link is not displayed.");
+        Assert.assertTrue(driver.findElement(SIGN_OUT_LINK).isDisplayed(), "Sign Out link is not displayed.");
     }
 }

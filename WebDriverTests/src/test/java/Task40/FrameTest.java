@@ -15,14 +15,26 @@ import org.testng.annotations.Test;
 public class FrameTest {
     private static final String DESTINATION_URL = "https://the-internet.herokuapp.com/iframe";
     private static final String FRAME_LOCATOR = "mce_0_ifr";
-    private WebDriver driver;
+    private static final String TEXT = "Hello world!";
+    private static final String BOLD_TEXT= "world!";
+    private static final By TEXT_EDITOR_LOCATOR = By.id("tinymce");
+    private static final By BUTTON_BOLD_LOCATOR = By.cssSelector("#mceu_3 > button");
+    private static final By TEXT_ELEMENT_LOCATOR = By.cssSelector("#tinymce > p");
+    private static final By BOLD_TEXT_LOCATOR = By.cssSelector("#tinymce > p > strong");
+    WebDriver driver;
+    WebElement textEditor;
+    Actions action;
 
     @BeforeMethod
-    public void openStartPage() {
+    public void startup() {
         System.setProperty("webdriver.chrome.driver", "src/test/resources/chromedriver.exe");
         driver = new ChromeDriver();
         driver.manage().window().maximize();
         driver.get(DESTINATION_URL);
+
+        driver.switchTo().frame(FRAME_LOCATOR);
+        textEditor = driver.findElement(TEXT_EDITOR_LOCATOR);
+        textEditor.clear();
     }
 
     @AfterMethod
@@ -32,35 +44,28 @@ public class FrameTest {
 
     @Test(groups = { "regression", "frame" })
     public void verifyAddedText() {
-        //switch to frame
+        textEditor.sendKeys(TEXT);
+        selectText();
+        driver.switchTo().defaultContent();
+        driver.findElement(BUTTON_BOLD_LOCATOR).click();
         driver.switchTo().frame(FRAME_LOCATOR);
+        String textResult = driver.findElement(TEXT_ELEMENT_LOCATOR).getText();
+        String bolTextResult = driver.findElement(BOLD_TEXT_LOCATOR).getText();
 
-        WebElement textEditor = driver.findElement(By.id("tinymce"));
-        textEditor.clear();
-        textEditor.sendKeys("Hello world!");
+        Assert.assertEquals(TEXT, textResult, "Expected text is '" + TEXT + "' but actual text is '" + textResult + "'.");
+        Assert.assertTrue(isElementPresent(BOLD_TEXT_LOCATOR), "There is no bold text.");
+        Assert.assertEquals(BOLD_TEXT, bolTextResult, "Expected bold text is '" + BOLD_TEXT + "' but actual bold text is '" + bolTextResult + "'.");
+    }
 
-        //select 'world!'
-        Actions action = new Actions(driver);
+    //select text 'world!'
+    public void selectText() {
+        action = new Actions(driver);
         action.keyDown(Keys.SHIFT).perform();
 
         for (int i = 0; i < 6; i++) {
             action.sendKeys(Keys.ARROW_LEFT).perform();
         }
-
         action.keyUp(Keys.SHIFT).perform();
-
-        //Make 'world!' text bold
-        driver.switchTo().defaultContent();
-        driver.findElement(By.cssSelector("#mceu_3 > button")).click();
-
-        driver.switchTo().frame(FRAME_LOCATOR);
-
-        WebElement text = driver.findElement(By.cssSelector("#tinymce > p"));
-        By boldTextLocator = By.cssSelector("#tinymce > p > strong");
-
-        Assert.assertEquals("Hello world!", text.getText(), "Incorrect text.");
-        Assert.assertTrue(isElementPresent(boldTextLocator), "No bold text.");
-        Assert.assertEquals("world!", driver.findElement(boldTextLocator).getText(), "Incorrect bold text.");
     }
 
     //check if an element is present in DOM

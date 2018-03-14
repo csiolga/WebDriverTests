@@ -7,60 +7,84 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 public class ExplicitWaitForSearchByOffice {
     private static final String DESTINATION_URL = "https://192.168.100.26/";
+    private static final String LOGIN_PAGE_TITLE = "RMSys - Sign In";
     private static final String USERNAME = "EugenBorisik";
     private static final String PASSWORD = "qwerty12345";
+    private static final String HOME_PAGE_TITLE = "RMSys - Home";
+    private static By USERNAME_LOCATOR = By.id("Username");
+    private static By PASSWORD_LOCATOR = By.id("Password");
+    private static By LOGIN_BUTTON = By.id("SubmitButton");
+    private static By OFFICE_TAB_LOCATOR = By.id("officeMenu");
+    private static By SEARCH_INPUT_LOCATOR = By.cssSelector("#input-search");
     private WebDriver driver;
+    WebElement usernameInput;
+    WebElement passwordInput;
+    WebElement searchInput;
 
-    @BeforeMethod
+    @BeforeClass
     public void invokeBrowser() {
         System.setProperty("webdriver.chrome.driver", "src/test/resources/chromedriver.exe");
         driver = new ChromeDriver();
         driver.manage().window().maximize();
     }
 
-    @AfterMethod
+    @AfterClass
     public void closeBrowser() {
         driver.close();
     }
 
-    @Test(groups = { "smoke", "waits" })
-    public void verifySearchByOfficeDisplayed() {
-        //a)Go to RMSys login page
+    @Test(groups = { "smoke" })
+    public void verifyLoginPageDisplayed() {
         driver.get(DESTINATION_URL);
+        String result = driver.getTitle();
 
-        //RMSys login page should appear
-        Assert.assertEquals("RMSys - Sign In", driver.getTitle(), "Login page isn't opened.");
+        Assert.assertEquals(LOGIN_PAGE_TITLE, result,
+                "Expected title is '" + LOGIN_PAGE_TITLE + "' but actual title is '" + result + "'.");
+    }
 
-        //b)Enter correct username and password
-        WebElement usernameInput = driver.findElement(By.id("Username"));
+    @Test(dependsOnMethods = { "verifyLoginPageDisplayed" }, groups = { "smoke" })
+    public void verifyUsernameValue() {
+        usernameInput = driver.findElement(USERNAME_LOCATOR);
+
         usernameInput.sendKeys(USERNAME);
-        WebElement passwordInput = driver.findElement(By.id("Password"));
+        String result = usernameInput.getAttribute("value");
+
+        Assert.assertEquals(USERNAME, result,
+                "Expected username is '" + USERNAME + "' but actual username is '" + result + "'.");
+    }
+
+    @Test(dependsOnMethods = { "verifyUsernameValue" }, groups = { "smoke" })
+    public void verifyPasswordValue() {
+        passwordInput = driver.findElement(PASSWORD_LOCATOR);
+
         passwordInput.sendKeys(PASSWORD);
+        String result = passwordInput.getAttribute("value");
 
-        //Both inputs should be filled in.
-        Assert.assertEquals(USERNAME, usernameInput.getAttribute("value"), "Incorrect Username.");
-        Assert.assertEquals(PASSWORD, passwordInput.getAttribute("value"), "Incorrect Password.");
+        Assert.assertEquals(PASSWORD, result,
+                "Expected password is '" + PASSWORD + "' but actual password is '" + result + "'.");
+    }
 
-        //c)Click Submit button
-        driver.findElement(By.id("SubmitButton")).click();
+    @Test(dependsOnMethods = { "verifyPasswordValue" }, groups = { "smoke" })
+    public void verifyHomePageDisplayed() {
+        driver.findElement(LOGIN_BUTTON).click();
+        String result = driver.getTitle();
 
-        //RMSys home page should appear.
-        Assert.assertEquals("RMSys - Home", driver.getTitle(), "Home page isn't opened.");
+        Assert.assertEquals(HOME_PAGE_TITLE, result,
+                "Expected title is '" + HOME_PAGE_TITLE + "' but actual title is '" + result + "'.");
+    }
 
-        //d)Go to office tab
-        driver.findElement(By.id("officeMenu")).click();
+    @Test(dependsOnMethods = { "verifyHomePageDisplayed" }, groups = { "smoke", "wait" })
+    public void verifySearchByOfficeButtonDisplayed() {
+        driver.findElement(OFFICE_TAB_LOCATOR).click();
+        searchInput = driver.findElement(SEARCH_INPUT_LOCATOR);
+        new WebDriverWait(driver, 15, 2700).until(ExpectedConditions.visibilityOf(searchInput));
 
-        By serchByOffice = By.cssSelector("#input-search");
-
-        //Wait for "Search by office" input to appear (wait 15 seconds, polling frequence - 2,7 seconds).
-        new WebDriverWait(driver, 15, 2700).until(ExpectedConditions.visibilityOfElementLocated(serchByOffice));
-
-        Assert.assertTrue(driver.findElement(serchByOffice).isDisplayed(), "Search by office input is not displayed");
+        Assert.assertTrue(searchInput.isDisplayed(), "Search by office input is not displayed");
     }
 }

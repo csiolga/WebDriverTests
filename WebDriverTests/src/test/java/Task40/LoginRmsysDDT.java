@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -16,6 +17,7 @@ public class LoginRmsysDDT {
     private static final String PASSWORD = "qwerty12345";
     private static final String BY_DOMAIN = "BY-MINSK";
     private static final String US_DOMAIN = "US-MPLS";
+    private static final String TITLE = "RMSys - Home";
 
     private static final By DOMAIN_DROPDOWN = By.xpath("//ul[contains(@class,'domains')]");
     private static final By CURRENT_DOMAIN = By.xpath("//li[@class='current-domain']");
@@ -23,7 +25,7 @@ public class LoginRmsysDDT {
     private WebDriver driver;
 
     @BeforeMethod
-    public void invokeBrowser() {
+    public void startup() {
         System.setProperty("webdriver.chrome.driver", "src/test/resources/chromedriver.exe");
         driver = new ChromeDriver();
         driver.manage().window().maximize();
@@ -51,16 +53,15 @@ public class LoginRmsysDDT {
             driver.findElement(DOMAIN_DROPDOWN).click();
             driver.findElement(By.xpath("//span[contains(text(), '" + domain + "')]/ancestor::li")).click();
         }
-
         driver.findElement(By.id("Username")).sendKeys(username);
         driver.findElement(By.id("Password")).sendKeys(password);
-
         WebElement checkbox = driver.findElement(REMEBER_CHECKBOX);
-
         if(remember) {
             checkbox.click();
         }
-
         driver.findElement(By.id("SubmitButton")).click();
+        String result = driver.getTitle();
+
+        Assert.assertEquals(TITLE, result, "Expected title is '" + TITLE + "' but actual title is '" + result + "'");
     }
 }
